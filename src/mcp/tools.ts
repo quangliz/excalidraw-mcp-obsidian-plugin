@@ -197,10 +197,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
     },
     async (args) =>
       runTool(async () => {
-        const res = await bridgeClient.callAction(
-          "get_scene_info",
-          args as GetSceneInfoInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("get_scene_info", args);
         return jsonResult(res);
       }),
   );
@@ -224,10 +221,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
     },
     async (args) =>
       runTool(async () => {
-        const res = await bridgeClient.callAction(
-          "get_elements",
-          args as GetElementsInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("get_elements", args);
         return jsonResult(res);
       }),
   );
@@ -252,10 +246,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
     },
     async (args) =>
       runTool(async () => {
-        const res = await bridgeClient.callAction(
-          "search_elements",
-          args as SearchElementsInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("search_elements", args);
         return jsonResult(res);
       }),
   );
@@ -273,10 +264,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
     },
     async (args) =>
       runTool(async () => {
-        const res = await bridgeClient.callAction(
-          "get_selected_elements",
-          args as GetSelectedElementsInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("get_selected_elements", args);
         return jsonResult(res);
       }),
   );
@@ -304,10 +292,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
     },
     async (args) =>
       runTool(async () => {
-        const res = await bridgeClient.callAction(
-          "set_view",
-          args as SetViewInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("set_view", args);
         return jsonResult(res);
       }),
   );
@@ -378,10 +363,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
     },
     async (args) =>
       runTool(async () => {
-        const res = await bridgeClient.callAction(
-          "delete_elements",
-          args as DeleteElementsInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("delete_elements", args);
         return jsonResult(normalizeMutationResult(res));
       }),
   );
@@ -408,10 +390,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
     },
     async (args) =>
       runTool(async () => {
-        const res = await bridgeClient.callAction(
-          "connect_elements",
-          args as ConnectElementsInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("connect_elements", args);
         return jsonResult(normalizeMutationResult(res));
       }),
   );
@@ -431,10 +410,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
     },
     async (args) =>
       runTool(async () => {
-        const res = await bridgeClient.callAction(
-          "add_mermaid",
-          args as AddMermaidInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("add_mermaid", args);
         return jsonResult(normalizeMutationResult(res));
       }),
   );
@@ -461,10 +437,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
     },
     async (args) =>
       runTool(async () => {
-        const res = await bridgeClient.callAction(
-          "align_elements",
-          args as AlignElementsInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("align_elements", args);
         return jsonResult(normalizeMutationResult(res));
       }),
   );
@@ -481,10 +454,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
     },
     async (args) =>
       runTool(async () => {
-        const res = await bridgeClient.callAction(
-          "restack_elements",
-          args as RestackElementsInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("restack_elements", args);
         return jsonResult(res);
       }),
   );
@@ -511,10 +481,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
             "Refusing to clear scene: 'confirm' must be explicitly set to true.",
           );
         }
-        const res = await bridgeClient.callAction(
-          "clear_scene",
-          args as ClearSceneInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("clear_scene", args);
         return jsonResult(res);
       }),
   );
@@ -534,10 +501,7 @@ export function registerAllTools(server: McpServer, bridgeClient: BridgeClient):
     },
     async (args) =>
       runTool(async () => {
-        const res = await bridgeClient.callAction(
-          "check_layout",
-          args as CheckLayoutInput & Record<string, unknown>,
-        );
+        const res = await bridgeClient.callAction("check_layout", args);
         const layoutWarnings = extractLayoutWarnings(res);
         return jsonResult({
           ...res,

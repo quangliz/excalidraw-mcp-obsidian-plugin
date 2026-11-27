@@ -47,7 +47,7 @@ export default class ObsidianExcalidrawMcpPlugin
 
     this.addCommand({
       id: "toggle-excalidraw-mcp-bridge",
-      name: "Toggle Excalidraw MCP Bridge",
+      name: "Toggle bridge",
       callback: () => {
         void this.toggleBridge();
       },
@@ -55,7 +55,7 @@ export default class ObsidianExcalidrawMcpPlugin
 
     this.addCommand({
       id: "restart-excalidraw-mcp-bridge",
-      name: "Restart Excalidraw MCP Bridge",
+      name: "Restart bridge",
       callback: () => {
         void this.restartBridge();
       },

@@ -353,7 +353,7 @@ export class BridgeServer {
             404,
           );
         }
-        const action = rpc.action as BridgeAction;
+        const action = rpc.action;
         const handler = this.options.handlers[action] as (input: unknown) => Promise<unknown>;
         const data = await handler(rpc.params ?? {});
         sendJson(res, 200, {

@@ -517,14 +517,23 @@ function applyDirectElementFields(
 export class ObsidianEaAdapter implements EaAdapter {
   private readonly app: App;
   private readonly getDefaultViewTarget: () => "active" | "first";
+  private readonly getEaOverride?: () => ExcalidrawAutomateApi | null;
 
-  constructor(app: App, getDefaultViewTarget: () => "active" | "first" = () => "active") {
+  constructor(
+    app: App,
+    getDefaultViewTarget: () => "active" | "first" = () => "active",
+    getEa?: () => ExcalidrawAutomateApi | null,
+  ) {
     this.app = app;
     this.getDefaultViewTarget = getDefaultViewTarget;
+    this.getEaOverride = getEa;
   }
 
   private getEa(): ExcalidrawAutomateApi | null {
-    const win = globalThis as unknown as { ExcalidrawAutomate?: ExcalidrawAutomateApi };
+    if (this.getEaOverride) {
+      return this.getEaOverride();
+    }
+    const win = window as unknown as { ExcalidrawAutomate?: ExcalidrawAutomateApi };
     return win.ExcalidrawAutomate ?? null;
   }
 
@@ -911,7 +920,7 @@ export class ObsidianEaAdapter implements EaAdapter {
         }
         if (patch.isDeleted !== undefined) el.isDeleted = patch.isDeleted;
 
-        const mergedStyle = mergeSpecStyle(patch as ElementUpdatePatch);
+        const mergedStyle = mergeSpecStyle(patch);
         applyDirectElementFields(el, mergedStyle, {
           frameId: patch.frameId,
           groupIds: patch.groupIds,

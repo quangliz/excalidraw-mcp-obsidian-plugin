@@ -846,59 +846,53 @@ describe("ObsidianEaAdapter with realistic ExcalidrawAutomate", () => {
 
   it("preserves all elements in multi-element createElements batches and resets styles per element", async () => {
     const env = createRealisticEaEnv();
-    const prevEa = globalThis.ExcalidrawAutomate;
-    globalThis.ExcalidrawAutomate = env.ea;
-    try {
-      const adapter = new ObsidianEaAdapter(env.app, () => "active");
-      const res = await adapter.createElements({
-        elements: [
-          {
-            id: "box-1",
-            type: "rectangle",
-            x: 0,
-            y: 0,
-            width: 140,
-            height: 70,
-            strokeColor: "#ff0000",
-            label: { text: "First" },
-          },
-          {
-            id: "box-2",
-            type: "rectangle",
-            x: 240,
-            y: 0,
-            width: 140,
-            height: 70,
-            label: { text: "Second" },
-          },
-          {
-            id: "arr-1",
-            type: "arrow",
-            x: 140,
-            y: 35,
-            points: [
-              [0, 0],
-              [100, 0],
-            ],
-            startBinding: { elementId: "box-1" },
-            endBinding: { elementId: "box-2" },
-          },
-        ],
-      });
+    const adapter = new ObsidianEaAdapter(env.app, () => "active", () => env.ea);
+    const res = await adapter.createElements({
+      elements: [
+        {
+          id: "box-1",
+          type: "rectangle",
+          x: 0,
+          y: 0,
+          width: 140,
+          height: 70,
+          strokeColor: "#ff0000",
+          label: { text: "First" },
+        },
+        {
+          id: "box-2",
+          type: "rectangle",
+          x: 240,
+          y: 0,
+          width: 140,
+          height: 70,
+          label: { text: "Second" },
+        },
+        {
+          id: "arr-1",
+          type: "arrow",
+          x: 140,
+          y: 35,
+          points: [
+            [0, 0],
+            [100, 0],
+          ],
+          startBinding: { elementId: "box-1" },
+          endBinding: { elementId: "box-2" },
+        },
+      ],
+    });
 
-      assert.equal(res.createdIds.length, 5);
-      const viewEls = env.getViewElements();
-      assert.equal(viewEls.length, 5);
-      const box1 = viewEls.find((e) => e.id === "box-1");
-      const box2 = viewEls.find((e) => e.id === "box-2");
-      const arr1 = viewEls.find((e) => e.id === "arr-1");
-      assert.equal(box1.strokeColor, "#ff0000");
-      assert.equal(box2.strokeColor, "#000000");
-      assert.equal(arr1.startBinding.elementId, "box-1");
-      assert.equal(arr1.endBinding.elementId, "box-2");
-    } finally {
-      globalThis.ExcalidrawAutomate = prevEa;
-    }
+    assert.equal(res.createdIds.length, 5);
+    const viewEls = env.getViewElements();
+    assert.equal(viewEls.length, 5);
+    const box1 = viewEls.find((e) => e.id === "box-1");
+    const box2 = viewEls.find((e) => e.id === "box-2");
+    const arr1 = viewEls.find((e) => e.id === "arr-1");
+    assert.equal(box1.strokeColor, "#ff0000");
+    assert.equal(box2.strokeColor, "#000000");
+    assert.equal(arr1.startBinding.elementId, "box-1");
+    assert.equal(arr1.endBinding.elementId, "box-2");
   });
 
   it("preserves existing elementsDict when updateElements adds new bound text to a shape", async () => {
@@ -906,30 +900,24 @@ describe("ObsidianEaAdapter with realistic ExcalidrawAutomate", () => {
       { id: "s1", type: "rectangle", x: 10, y: 20, width: 160, height: 80 },
       { id: "s2", type: "rectangle", x: 250, y: 20, width: 160, height: 80 },
     ]);
-    const prevEa = globalThis.ExcalidrawAutomate;
-    globalThis.ExcalidrawAutomate = env.ea;
-    try {
-      const adapter = new ObsidianEaAdapter(env.app, () => "active");
-      const res = await adapter.updateElements({
-        updates: [
-          { id: "s1", text: "Added Label", fontSize: 18 },
-          { id: "s2", x: 300 },
-        ],
-      });
+    const adapter = new ObsidianEaAdapter(env.app, () => "active", () => env.ea);
+    const res = await adapter.updateElements({
+      updates: [
+        { id: "s1", text: "Added Label", fontSize: 18 },
+        { id: "s2", x: 300 },
+      ],
+    });
 
-      assert.deepEqual(res.updatedIds, ["s1", "s2"]);
-      const viewEls = env.getViewElements();
-      assert.equal(viewEls.length, 3);
-      const s1 = viewEls.find((e) => e.id === "s1");
-      const s2 = viewEls.find((e) => e.id === "s2");
-      const boundText = viewEls.find((e) => e.type === "text" && e.containerId === "s1");
-      assert.ok(boundText);
-      assert.equal(boundText.text, "Added Label");
-      assert.equal(boundText.fontSize, 18);
-      assert.equal(s1.boundElements[0].id, boundText.id);
-      assert.equal(s2.x, 300);
-    } finally {
-      globalThis.ExcalidrawAutomate = prevEa;
-    }
+    assert.deepEqual(res.updatedIds, ["s1", "s2"]);
+    const viewEls = env.getViewElements();
+    assert.equal(viewEls.length, 3);
+    const s1 = viewEls.find((e) => e.id === "s1");
+    const s2 = viewEls.find((e) => e.id === "s2");
+    const boundText = viewEls.find((e) => e.type === "text" && e.containerId === "s1");
+    assert.ok(boundText);
+    assert.equal(boundText.text, "Added Label");
+    assert.equal(boundText.fontSize, 18);
+    assert.equal(s1.boundElements[0].id, boundText.id);
+    assert.equal(s2.x, 300);
   });
 });

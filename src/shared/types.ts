@@ -108,7 +108,7 @@ export interface SceneBounds {
   height: number;
 }
 
-export interface GetSceneInfoInput extends SceneTargetInput {}
+export type GetSceneInfoInput = SceneTargetInput;
 
 export interface GetSceneInfoOutput {
   filePath: string;
@@ -154,7 +154,7 @@ export interface SearchElementsOutput {
   totalMatched: number;
 }
 
-export interface GetSelectedElementsInput extends SceneTargetInput {}
+export type GetSelectedElementsInput = SceneTargetInput;
 
 export interface GetSelectedElementsOutput {
   filePath: string;

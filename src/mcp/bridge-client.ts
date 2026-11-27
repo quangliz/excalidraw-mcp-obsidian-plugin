@@ -1,3 +1,4 @@
+import { request as httpRequestNode } from "node:http";
 import {
   DEFAULT_BRIDGE_HOST,
   DEFAULT_BRIDGE_PORT,
@@ -175,14 +176,71 @@ export class HttpBridgeClient implements BridgeClient {
     );
   }
 
-  async health(): Promise<BridgeHealthResult> {
-    let response: Response;
-    try {
-      response = await fetch(`${this.baseUrl}/health`, {
-        method: "GET",
-        headers: this.buildHeaders(false),
-        signal: AbortSignal.timeout(this.timeoutMs),
+  private sendHttp(
+    method: "GET" | "POST",
+    path: string,
+    headers: Record<string, string>,
+    body?: string,
+  ): Promise<{ status: number; ok: boolean; text: string }> {
+    return new Promise((resolve, reject) => {
+      const requestHeaders: Record<string, string | number> = { ...headers };
+      if (body !== undefined) {
+        requestHeaders["Content-Length"] = Buffer.byteLength(body);
+      }
+
+      let settled = false;
+      const fail = (err: unknown) => {
+        if (settled) return;
+        settled = true;
+        reject(err);
+      };
+
+      const req = httpRequestNode(
+        {
+          hostname: this.host,
+          port: this.port,
+          path,
+          method,
+          headers: requestHeaders,
+          timeout: this.timeoutMs,
+        },
+        (res) => {
+          const chunks: Buffer[] = [];
+          res.on("data", (chunk: Buffer | string) => {
+            chunks.push(typeof chunk === "string" ? Buffer.from(chunk, "utf8") : chunk);
+          });
+          res.on("end", () => {
+            if (settled) return;
+            settled = true;
+            const status = res.statusCode ?? 0;
+            resolve({
+              status,
+              ok: status >= 200 && status < 300,
+              text: Buffer.concat(chunks).toString("utf8"),
+            });
+          });
+          res.on("error", fail);
+        },
+      );
+
+      req.on("timeout", () => {
+        const timeoutErr = new Error(`Request timed out after ${this.timeoutMs}ms.`);
+        timeoutErr.name = "TimeoutError";
+        req.destroy(timeoutErr);
       });
+      req.on("error", fail);
+
+      if (body !== undefined) {
+        req.write(body);
+      }
+      req.end();
+    });
+  }
+
+  async health(): Promise<BridgeHealthResult> {
+    let response: { status: number; ok: boolean; text: string };
+    try {
+      response = await this.sendHttp("GET", "/health", this.buildHeaders(false));
     } catch (err) {
       throw this.wrapNetworkError(err);
     }
@@ -196,7 +254,7 @@ export class HttpBridgeClient implements BridgeClient {
       );
     }
 
-    const rawText = await response.text();
+    const rawText = response.text;
     let parsed: Record<string, unknown>;
     try {
       parsed = rawText ? (JSON.parse(rawText) as Record<string, unknown>) : {};
@@ -241,14 +299,14 @@ export class HttpBridgeClient implements BridgeClient {
       requestId: `mcp-${Date.now()}-${this.requestCounter}`,
     };
 
-    let response: Response;
+    let response: { status: number; ok: boolean; text: string };
     try {
-      response = await fetch(`${this.baseUrl}/rpc`, {
-        method: "POST",
-        headers: this.buildHeaders(true),
-        body: JSON.stringify(requestBody),
-        signal: AbortSignal.timeout(this.timeoutMs),
-      });
+      response = await this.sendHttp(
+        "POST",
+        "/rpc",
+        this.buildHeaders(true),
+        JSON.stringify(requestBody),
+      );
     } catch (err) {
       throw this.wrapNetworkError(err);
     }
@@ -262,7 +320,7 @@ export class HttpBridgeClient implements BridgeClient {
       );
     }
 
-    const rawText = await response.text();
+    const rawText = response.text;
     let parsed: BridgeResponse<BridgeActionPayloads[A]["output"] & Record<string, unknown>>;
     try {
       parsed = JSON.parse(rawText) as BridgeResponse<
