@@ -4,8 +4,8 @@ Local HTTP bridge Obsidian plugin + standalone stdio MCP server bringing Excalid
 
 ## Architecture
 
-- **Obsidian plugin (`dist/plugin/main.js`)**: Runs inside Obsidian Desktop, wraps `window.ExcalidrawAutomate` and `app.vault`, and exposes an authenticated `127.0.0.1` HTTP bridge (`GET /health`, `POST /rpc`).
-- **MCP stdio server (`dist/mcp/server.js`)**: Standalone Node.js MCP server that translates MCP tool calls into bridge RPC calls and returns native MCP `image` content blocks for PNG exports.
+- **Obsidian plugin (`dist/plugin/main.js`)**: Runs inside Obsidian Desktop, wraps `window.ExcalidrawAutomate` and `app.vault`, and exposes an authenticated `127.0.0.1` HTTP bridge (`GET /health`, `POST /rpc`) plus a built-in Streamable HTTP MCP endpoint (`POST /mcp`, zero-config auto-discovery with Antidian via `getAntidianMcpServer()` — no standalone Node.js process required).
+- **MCP stdio server (`dist/mcp/server.js`)**: Optional standalone Node.js stdio MCP server for external MCP clients that require stdio transport; returns native MCP `image` content blocks for PNG exports.
 
 ## Build & Deploy to Obsidian Vault
 
@@ -16,21 +16,21 @@ npm run build
 npm test
 ```
 
-Preview or deploy the Obsidian plugin to your vault (defaults to `$OBSIDIAN_VAULT_PATH` or `/home/quangnv92/Documents/vsf`):
+Preview or deploy the Obsidian plugin to your vault (pass `--vault <path>` or set `$OBSIDIAN_VAULT_PATH`):
 
 ```bash
 # Preview copy targets without modifying the vault
-node scripts/deploy-vault.mjs --dry-run --vault /home/quangnv92/Documents/vsf
+node scripts/deploy-vault.mjs --dry-run --vault /path/to/your/vault
 
 # Deploy manifest.json, styles.css, versions.json, and dist/plugin/main.js
-node scripts/deploy-vault.mjs --vault /home/quangnv92/Documents/vsf
+node scripts/deploy-vault.mjs --vault /path/to/your/vault
 ```
 
 ## Obsidian Plugin Activation
 
 1. Install and enable the **Excalidraw** community plugin in Obsidian.
-2. Open **Settings -> Community plugins**, reload plugins if needed, and enable **Obsidian Excalidraw MCP**.
-3. Open **Settings -> Obsidian Excalidraw MCP** to inspect or configure:
+2. Open **Settings -> Community plugins**, reload plugins if needed, and enable **Excalidraw MCP**.
+3. Open **Settings -> Excalidraw MCP** to inspect or configure:
    - **Port** (default `27129`)
    - **Auth Token** (optional Bearer token; recommended)
    - **Default View Target** (`active` or `first`)
@@ -39,7 +39,9 @@ node scripts/deploy-vault.mjs --vault /home/quangnv92/Documents/vsf
 
 ## MCP Client Configuration
 
-Add the stdio server to your MCP client configuration (Antigravity, Claude Desktop, Antidian, etc.):
+If you use **Antidian**, `excalidraw-mcp-antidian` is auto-detected under **Settings -> Antidian -> MCP servers** over local HTTP (`http://127.0.0.1:27129/mcp`) with no extra configuration.
+
+For external stdio MCP clients (Antigravity CLI, Claude Desktop, etc.), add the standalone stdio server:
 
 ```json
 {
@@ -47,7 +49,7 @@ Add the stdio server to your MCP client configuration (Antigravity, Claude Deskt
     "obsidian-excalidraw": {
       "command": "node",
       "args": [
-        "/home/quangnv92/Documents/obsidian-excalidraw-mcp/dist/mcp/server.js"
+        "/path/to/obsidian-excalidraw-mcp/dist/mcp/server.js"
       ],
       "env": {
         "OBSIDIAN_EXCALIDRAW_MCP_PORT": "27129",

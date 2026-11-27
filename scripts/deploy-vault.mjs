@@ -3,7 +3,6 @@ import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const DEFAULT_VAULT_PATH = "/home/quangnv92/Documents/vsf";
 const PLUGIN_ID = "excalidraw-mcp-antidian";
 
 function printUsage() {
@@ -12,7 +11,7 @@ function printUsage() {
       "Usage: node scripts/deploy-vault.mjs [options]",
       "",
       "Options:",
-      `  --vault <path>   Obsidian vault root (default: OBSIDIAN_VAULT_PATH or ${DEFAULT_VAULT_PATH})`,
+      "  --vault <path>   Obsidian vault root (or set OBSIDIAN_VAULT_PATH)",
       "  --dry-run        Print planned copy operations without writing files",
       "  -h, --help       Show this help message",
     ].join("\n"),
@@ -20,7 +19,7 @@ function printUsage() {
 }
 
 function parseArgs(argv) {
-  let vaultPath = process.env.OBSIDIAN_VAULT_PATH || DEFAULT_VAULT_PATH;
+  let vaultPath = process.env.OBSIDIAN_VAULT_PATH || "";
   let dryRun = false;
   let help = false;
 
@@ -55,6 +54,10 @@ function main() {
   if (help) {
     printUsage();
     return;
+  }
+
+  if (!vaultPath) {
+    throw new Error("Missing vault path. Pass --vault <path> or set OBSIDIAN_VAULT_PATH.");
   }
 
   const scriptDir = path.dirname(fileURLToPath(import.meta.url));
