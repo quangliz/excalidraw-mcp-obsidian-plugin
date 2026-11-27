@@ -1,9 +1,9 @@
 {
-  "id": "obsidian-excalidraw-mcp",
-  "name": "Obsidian Excalidraw MCP",
+  "id": "excalidraw-mcp",
+  "name": "Excalidraw MCP",
   "version": "0.1.0",
   "minAppVersion": "1.5.0",
-  "description": "Local HTTP bridge for Excalidraw+ style MCP tools in Obsidian",
+  "description": "Control Excalidraw drawings from AI agents via a local MCP bridge with layout checks and image export.",
   "author": "Quang",
   "authorUrl": "https://github.com/quangliz",
   "isDesktopOnly": true

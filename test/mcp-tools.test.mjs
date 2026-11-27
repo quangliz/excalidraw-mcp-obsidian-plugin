@@ -508,7 +508,7 @@ describe("MCP server tools and bridge client", () => {
     );
 
     assert.equal(stderr, "");
-    assert.match(stdout, /\[dry-run\] Target plugin directory: \/tmp\/example-obsidian-vault\/\.obsidian\/plugins\/obsidian-excalidraw-mcp/);
+    assert.match(stdout, /\[dry-run\] Target plugin directory: \/tmp\/example-obsidian-vault\/\.obsidian\/plugins\/excalidraw-mcp/);
     assert.match(stdout, /manifest\.json/);
     assert.match(stdout, /main\.js/);
   });
