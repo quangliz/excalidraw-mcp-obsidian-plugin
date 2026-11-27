@@ -98,6 +98,29 @@ export default class ObsidianExcalidrawMcpPlugin
     };
   }
 
+  getAntidianMcpServer(): {
+    name: string;
+    url: string;
+    headers?: Array<{ name: string; value: string }>;
+    description?: string;
+    version?: string;
+  } | null {
+    const addr = this.bridgeServer?.getAddress();
+    if (!this.bridgeServer?.isRunning() || !addr) {
+      return null;
+    }
+    const token = this.settings.authToken.trim();
+    return {
+      name: "excalidraw",
+      url: `http://${addr.host}:${addr.port}/mcp`,
+      ...(token
+        ? { headers: [{ name: "Authorization", value: `Bearer ${token}` }] }
+        : {}),
+      description: this.manifest.description,
+      version: this.manifest.version,
+    };
+  }
+
   async startBridge(): Promise<void> {
     if (!this.adapter) return;
     if (this.bridgeServer?.isRunning()) return;

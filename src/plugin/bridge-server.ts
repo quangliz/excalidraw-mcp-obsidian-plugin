@@ -9,6 +9,7 @@ import {
 } from "../shared/protocol.ts";
 import { EaAdapterError, type EaAdapter } from "./ea-adapter.ts";
 import { BridgeActionError, type BridgeHandlerMap } from "./handlers.ts";
+import { handleMcpJsonRpc } from "./mcp-http.ts";
 
 const MAX_BODY_BYTES = 2 * 1024 * 1024; // 2MB
 const ACTION_SET = new Set<string>(BRIDGE_ACTIONS);
@@ -258,11 +259,13 @@ export class BridgeServer {
     const authToken = this.options.getAuthToken?.() ?? "";
 
     if (method === "GET" && pathname === "/health") {
+      const port = this.boundPort ?? this.options.port;
       sendJson(res, 200, {
         ok: true,
         status: "ok",
         host: DEFAULT_BRIDGE_HOST,
-        port: this.boundPort ?? this.options.port,
+        port,
+        mcpUrl: `http://${DEFAULT_BRIDGE_HOST}:${port}/mcp`,
         version: this.options.version ?? "0.1.0",
         authRequired: authToken.length > 0,
         eaAvailable: this.options.adapter.isAvailable(),
@@ -279,6 +282,58 @@ export class BridgeServer {
           message: "Missing or invalid Bearer auth token.",
         },
       } satisfies BridgeResponse<never>);
+      return;
+    }
+
+    if (pathname === "/mcp") {
+      if (method === "DELETE") {
+        res.writeHead(200);
+        res.end();
+        return;
+      }
+      if (method !== "POST") {
+        res.writeHead(405);
+        res.end();
+        return;
+      }
+      try {
+        const parsed = await readJsonBody(req);
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+          res.writeHead(202);
+          res.end();
+          return;
+        }
+        const obj = parsed as Record<string, unknown>;
+        if (Object.keys(obj).length === 0) {
+          res.writeHead(202);
+          res.end();
+          return;
+        }
+        await handleMcpJsonRpc(
+          obj,
+          res,
+          this.options.handlers,
+          this.options.version ?? "0.1.0",
+        );
+      } catch (err) {
+        if (err instanceof HttpPayloadError && err.statusCode === 413) {
+          sendJson(
+            res,
+            413,
+            {
+              ok: false,
+              error: { code: err.code, message: err.message },
+            } satisfies BridgeResponse<never>,
+            true,
+          );
+          return;
+        }
+        sendJson(res, 400, {
+          jsonrpc: "2.0",
+          id: null,
+          error: { code: -32700, message: "Parse error" },
+        });
+      }
       return;
     }
 

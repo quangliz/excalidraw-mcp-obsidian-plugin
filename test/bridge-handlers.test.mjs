@@ -572,6 +572,139 @@ describe("bridge server and handlers", () => {
     assert.equal(body.ok, false);
     assert.equal(body.error.code, "PAYLOAD_TOO_LARGE");
   });
+
+  it("serves Streamable HTTP MCP JSON-RPC on /mcp with Bearer auth and native image blocks", async () => {
+    const adapter = createMockAdapter([
+      {
+        id: "box-1",
+        type: "rectangle",
+        x: 0,
+        y: 0,
+        width: 160,
+        height: 80,
+        boundElements: [{ id: "label-1", type: "text" }],
+      },
+      {
+        id: "label-1",
+        type: "text",
+        x: 20,
+        y: 25,
+        width: 120,
+        height: 30,
+        text: "API",
+        containerId: "box-1",
+      },
+    ]);
+    const { baseUrl } = await startTestServer(adapter, "mcp-secret");
+
+    const health = await (await fetch(`${baseUrl}/health`)).json();
+    assert.equal(health.mcpUrl, `${baseUrl}/mcp`);
+
+    // Unauthenticated /mcp rejected
+    const unauth = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+    });
+    assert.equal(unauth.status, 401);
+
+    const authHeaders = {
+      "Content-Type": "application/json",
+      Authorization: "Bearer mcp-secret",
+    };
+
+    const initRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+    });
+    assert.equal(initRes.status, 200);
+    const initJson = await initRes.json();
+    assert.equal(initJson.result.serverInfo.name, "excalidraw");
+    assert.equal(initJson.result.protocolVersion, "2025-03-26");
+
+    const notifRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }),
+    });
+    assert.equal(notifRes.status, 202);
+
+    const listRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }),
+    });
+    const listJson = await listRes.json();
+    assert.equal(listJson.result.tools.length, 15);
+    const walkSchema = (node) => {
+      if (!node || typeof node !== "object") return;
+      if (Array.isArray(node)) {
+        node.forEach(walkSchema);
+        return;
+      }
+      assert.equal(Array.isArray(node.items), false);
+      assert.equal(Object.prototype.hasOwnProperty.call(node, "additionalItems"), false);
+      Object.values(node).forEach(walkSchema);
+    };
+    for (const t of listJson.result.tools) {
+      walkSchema(t.inputSchema);
+    }
+
+    const createRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 3,
+        method: "tools/call",
+        params: {
+          name: "create_elements",
+          arguments: {
+            elements: [{ type: "rectangle", x: 50, y: 20, width: 160, height: 80 }],
+          },
+        },
+      }),
+    });
+    const createJson = await createRes.json();
+    const createPayload = JSON.parse(createJson.result.content[0].text);
+    assert.ok(Array.isArray(createPayload.layoutWarnings));
+    assert.ok(createPayload.layoutWarnings.some((w) => w.type === "shape_overlap"));
+
+    const exportRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 4,
+        method: "tools/call",
+        params: {
+          name: "export_image",
+          arguments: { format: "png", ids: ["box-1"] },
+        },
+      }),
+    });
+    const exportJson = await exportRes.json();
+    assert.equal(exportJson.result.content.length, 2);
+    assert.equal(exportJson.result.content[0].type, "text");
+    assert.equal("base64" in JSON.parse(exportJson.result.content[0].text), false);
+    assert.equal(exportJson.result.content[1].type, "image");
+    assert.equal(exportJson.result.content[1].mimeType, "image/png");
+    assert.ok(exportJson.result.content[1].data.length > 0);
+
+    const clearNoConfirm = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 5,
+        method: "tools/call",
+        params: { name: "clear_scene", arguments: { confirm: false } },
+      }),
+    });
+    const clearJson = await clearNoConfirm.json();
+    assert.equal(clearJson.result.isError, true);
+  });
 });
 
 describe("ObsidianEaAdapter with realistic ExcalidrawAutomate", () => {
