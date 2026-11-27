@@ -12,7 +12,6 @@ import type {
   ElementSnapshot,
   ElementStyle,
   ElementType,
-  ElementUpdatePatch,
   ExportImageInput,
   ExportImageOutput,
   GetSceneInfoOutput,

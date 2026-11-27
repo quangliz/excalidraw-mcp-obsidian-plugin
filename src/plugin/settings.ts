@@ -73,7 +73,7 @@ export class ExcalidrawMcpSettingTab extends PluginSettingTab {
     return [
       {
         type: "group",
-        heading: "Excalidraw MCP bridge",
+        heading: "Local bridge",
         items: this.getRows(),
       },
     ];
@@ -88,7 +88,7 @@ export class ExcalidrawMcpSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    new Setting(containerEl).setName("Excalidraw MCP bridge").setHeading();
+    new Setting(containerEl).setName("Local bridge").setHeading();
     for (const row of this.getRows()) {
       row.render(new Setting(containerEl).setName(row.name).setDesc(row.desc));
     }

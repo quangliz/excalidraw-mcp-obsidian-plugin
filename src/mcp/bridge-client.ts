@@ -192,7 +192,7 @@ export class HttpBridgeClient implements BridgeClient {
       const fail = (err: unknown) => {
         if (settled) return;
         settled = true;
-        reject(err);
+        reject(err instanceof Error ? err : new Error(String(err)));
       };
 
       const req = httpRequestNode(

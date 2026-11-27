@@ -3,21 +3,9 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { validateVaultRelativePath } from "../shared/protocol.ts";
 import type {
-  AddMermaidInput,
-  AlignElementsInput,
-  CheckLayoutInput,
-  ClearSceneInput,
-  ConnectElementsInput,
   CreateElementsInput,
-  DeleteElementsInput,
   ExportImageInput,
-  GetElementsInput,
-  GetSceneInfoInput,
-  GetSelectedElementsInput,
   LayoutWarning,
-  RestackElementsInput,
-  SearchElementsInput,
-  SetViewInput,
   UpdateElementsInput,
 } from "../shared/types.ts";
 import type { BridgeClient } from "./bridge-client.ts";
