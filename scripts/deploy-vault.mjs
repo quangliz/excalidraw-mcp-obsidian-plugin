@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DEFAULT_VAULT_PATH = "/home/quangnv92/Documents/vsf";
-const PLUGIN_ID = "excalidraw-mcp";
+const PLUGIN_ID = "excalidraw-mcp-antidian";
 
 function printUsage() {
   console.log(
