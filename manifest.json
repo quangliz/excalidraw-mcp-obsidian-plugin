@@ -1,7 +1,7 @@
 {
   "id": "excalidraw-mcp-antidian",
   "name": "Excalidraw MCP",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "minAppVersion": "1.5.0",
   "description": "Control Excalidraw drawings from AI agents via a local MCP bridge with layout checks and image export.",
   "author": "Quang",
