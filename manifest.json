@@ -1,0 +1,9 @@
+{
+  "id": "obsidian-excalidraw-mcp",
+  "name": "Obsidian Excalidraw MCP",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Local HTTP bridge for Excalidraw+ style MCP tools in Obsidian",
+  "author": "Antidian",
+  "isDesktopOnly": true
+}

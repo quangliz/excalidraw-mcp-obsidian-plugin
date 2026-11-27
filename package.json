@@ -1,0 +1,22 @@
+{
+  "name": "obsidian-excalidraw-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "node esbuild.config.mjs",
+    "test": "node --experimental-strip-types --test test/*.test.mjs",
+    "deploy": "node scripts/deploy-vault.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.11",
+    "esbuild": "^0.28.2",
+    "obsidian": "^1.14.4",
+    "typescript": "^7.0.2"
+  }
+}
